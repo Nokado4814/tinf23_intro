@@ -1,34 +1,78 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-
+import { PrismaService } from 'src/prisma.service';
+import { hash } from 'node:crypto';
 
 @Injectable()
 export class UserService {
-  private store: User[] = [];
+	private store: User[] = [];
 
+	constructor(private readonly prisma: PrismaService) {}
 
+	async create(createUserDto: CreateUserDto) {
+		if (!createUserDto.name || createUserDto.name.length < 2) {
+			throw new BadRequestException('Name must be at least 2 characters long');
+		}
+		if (!createUserDto.password) {
+			throw new BadRequestException('Password is required');
+		}
+		const createdUser = await this.prisma.user.create({
+			data: {
+				name: createUserDto.name,
+				passwordHash: this.hash(createUserDto.password),
+			},
+		});
+		return createdUser.id;
+	}
 
-  create(createUserDto: CreateUserDto) {
-    const newUser =  new User(this.store.length, createUserDto.name);
-    this.store.push(newUser);
-    return newUser;
-    }
+	async findAll(): Promise<User[]> {
+		return await this.prisma.user.findMany({
+			select: { id: true, name: true, passwordHash: false },
+		});
+	}
 
-  findAll() {
-    return this.store;
-  }
+	async findOne(id: string): Promise<User | null> {
+		const user = await this.prisma.user.findUnique({
+			where: { id },
+			select: { id: true, name: true, passwordHash: false },
+		});
+		if (!user) {
+			throw new BadRequestException(`User with ID ${id} not found`);
+		}
+		return user;
+	}
 
-  findOne(id: number) : User | undefined {
-    return this.store.find((user) => user.id === id); //=== ist der strikte Vergleich (Typ und Wert müssen gleich sein)
-  }
+	async update(id: string, updateUserDto: UpdateUserDto) {
+		const user = await this.findOne(id);
+		if (!user) {
+			throw new BadRequestException(`User with ID ${id} not found`);
+		}
+		return await this.prisma.user.update({
+			where: { id },
+			data: {
+				name: updateUserDto.name,
+				...(updateUserDto.password && {
+					passwordHash: this.hash(updateUserDto.password),
+				}),
+			},
+			select: { id: true, name: true, passwordHash: false },
+		});
+	}
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+	async remove(id: string) {
+		const user = await this.prisma.user.findUnique({ where: { id } });
+		if (user === undefined) {
+			throw new BadRequestException(`User with ID ${id} not found`);
+		}
+		return await this.prisma.user.delete({
+			where: { id },
+			select: { id: true, name: true, passwordHash: false },
+		});
+	}
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+	private hash(password: string): string {
+		return hash('sha256', password);
+	}
 }

@@ -1,36 +1,36 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
 {
-    "name": "Nest.js",
-    // Use Docker Compose so we can start a separate PostgreSQL service alongside the dev container.
-    "dockerComposeFile": [
-        "docker-compose.yml"
-    ],
-    // The service in the compose file that should be used as the devcontainer.
-    "service": "app",
-    // Where the workspace will be mounted inside the container (matches compose volume below).
-    "workspaceFolder": "/workspace",
-    // When stopping the container from VS Code, stop the compose stack.
-    "shutdownAction": "stopCompose",
+	"name": "Nest.js",
+	// Use Docker Compose so we can start a separate PostgreSQL service alongside the dev container.
+	"dockerComposeFile": ["docker-compose.yml"],
+	// The service in the compose file that should be used as the devcontainer.
+	"service": "app",
+	// Where the workspace will be mounted inside the container (matches compose volume below).
+	"workspaceFolder": "/workspace",
+	// When stopping the container from VS Code, stop the compose stack.
+	"shutdownAction": "stopCompose",
 
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "esbenp.prettier-vscode",
-                "unjinjang.rest-api-client",
-                "Prisma.prisma",
-                "mtxr.sqltools-driver-pg",
-                "mtxr.sqltools"
-            ]
-        }
-    },
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"esbenp.prettier-vscode",
+				"unjinjang.rest-api-client",
+				"Prisma.prisma",
+				"mtxr.sqltools-driver-pg",
+				"mtxr.sqltools"
+			]
+		},
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.formatOnSave": true
+	},
 
-    // Forward the PostgreSQL port so the host can connect if needed.
-    "forwardPorts": [5432],
+	// Forward the PostgreSQL port so the host can connect if needed.
+	"forwardPorts": [5432],
 
-    // Run a basic install after creating the container. Adjust as needed for your project.
-    "postCreateCommand": "npm install",
+	// Run a basic install after creating the container. Adjust as needed for your project.
+	"postCreateCommand": "npm install",
 
-    // Use the non-root 'node' user that the base image provides.
-    "remoteUser": "node"
+	// Use the non-root 'node' user that the base image provides.
+	"remoteUser": "node"
 }
