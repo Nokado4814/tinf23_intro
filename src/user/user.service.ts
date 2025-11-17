@@ -68,7 +68,7 @@ export class UserService {
 		}
 		return await this.prisma.user.delete({
 			where: { id },
-			select: { id: true, name: true, passwordHash: false },
+			select: { id: true, name: true, passwordHash: false }, //omit passwordHash würde hier auch gehen
 		});
 	}
 
